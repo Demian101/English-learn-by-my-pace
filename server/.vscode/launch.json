@@ -1,0 +1,8 @@
+{
+  "name": "test",
+  "type": "node",
+  "request": "launch",
+  "program": "${workspaceFolder}/index.js",
+  "args": [],
+  "console": "integratedTerminal"
+}
