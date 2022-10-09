@@ -30,7 +30,7 @@ const SentSchema: Schema = new Schema(
     zh: { type: String, required: true, },
     label: [{ type: String, }],
     sound: { type: String },
-    words: [{ type: Schema.Types.ObjectId, ref: Word } ],
+    words: [{ type: Schema.Types.ObjectId, ref: 'Word' } ],
     histInput: [{ type: String, }],
 
     idc: {  // indicator，指标

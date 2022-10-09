@@ -160,10 +160,6 @@ illustrate
 
 words 是空的，没插进去，所以 populate 不出来。
 
-
-
-
-
 ```
 > mongo
 show databases;
@@ -547,6 +543,17 @@ div 父元素遵循文档流 ,在上一个 div 的下面自然出现 ;
   - [ ] 后端 Sentence ，传入句子，检查里面有没有已存在的单词，用绿色在前端标出。
   - [x] 忽然觉得不应该有主词和派生。（这个放到之后确实需要的话，手动在全库操作吧）
 
+- [x] 10.07 Word/topN 能 populate 出 examples ， 为啥 sen/topN 没法  populate 出 word ？？？？
+  - [x] 代码没看出啥来
+  - [x] mongo 没看出啥区别
+  - [x] ok了，实在数据结构里的 ref: 'Word' 最好加个 ’‘ 引号 ....
+
+
+
+
+
+
+
 
 
 # Real Data
@@ -773,7 +780,6 @@ The subjects of the curriculum form a coherent whole.
 派生： adherent /əd'hɪərənt/ n. 拥护者，信徒
 -The movement is gaining more and more adherents.
 -支持这个运动的人越来越多了。
-
 
 
 prevail  /prɪ'veɪl/  v. 流行, 盛行; 获胜; 占优势

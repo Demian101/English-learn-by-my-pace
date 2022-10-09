@@ -136,7 +136,7 @@ const getCognitionTopN = async (req: Request, res: Response, next: NextFunction)
   console.log('Controller getCognitionTopN...');
   try {
     const SentFields = 'idc.cognition en zh label sound words'
-    const WordFields = 'word rootOrAffix label soundmark definition ex1 ex2 ex3'
+    const WordFields = 'word rootOrAffix label phrase soundmark definition examples'
 
     const wordsList: any = await Sentence.find()  // {isInRankList: true}
       .sort({'idc.cognition': 1})
@@ -157,7 +157,7 @@ const getCognitionTopN = async (req: Request, res: Response, next: NextFunction)
     if (wordsList){ 
       console.log('wordsList', wordsList) 
       res.json(wordsList) 
-    }
+    } else{ res.status(500).json({message: "Something went wrong"})  }
   }
   catch(err){ 
     res.json(err)
@@ -356,7 +356,7 @@ const soundStream = async ( req: Request, res: Response, next: NextFunction) => 
     console.log("Current directory:", __dirname);
     // const soundPath = '../../../pythonTTS/voices/' + sentId + '.mp3';
     // const soundPath = './' + sentId + '.mp3';
-    const soundPath = '/Users/soda/Repository/Eng/pythonTTS/voices/' + sentId + '.mp3';
+    const soundPath = '/Users/soda/Repository/English-learn-by-my-pace/pythonTTS/voices/' + sentId + '.mp3';
     // console.log(fs.statSync(__dirname)) ;
     var stat = fs.statSync(soundPath);
     console.log('req.headers.range', req.headers.range)

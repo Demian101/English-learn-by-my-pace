@@ -2,10 +2,16 @@ import { useState, useEffect } from 'react';
 import { BsPinAngle } from "react-icons/bs";
 import { GiSoundWaves } from "react-icons/gi";
 import { FcElectricalSensor } from "react-icons/fc";
+import { useMutation, useQuery } from "react-query";
 import axios from 'axios'
 
-const useAudio = url => {
-  const [audio] = useState(new Audio(url));
+// 因为 fetch audio 的 url 是个异步过程， CHrome 不能很好的支持，所以我们选择：
+// 1. fetch 数据后再渲染 Player 组件，
+// 2. 传进来的是一个  audio 流对象
+// 3. 使用该流对象去初始化 Audio 对象，而不是 url
+const useAudio =  (data) => { // {url}
+  const [audio] = useState(new Audio(data));
+  // const [audio] = useState(new Audio(url));
   const [playing, setPlaying] = useState(false);
   const toggle = () => setPlaying(!playing);
   useEffect(() => {
@@ -23,7 +29,6 @@ const useAudio = url => {
 const Player = ({ url }) => {
   const [playing, toggle] = useAudio(url);
   return (
-      // <button className='inline pr-2 text-xl rounded-md bg-slate-50 hover:bg-slate-100' onClick={toggle}>{playing ?  <GiSoundWaves /> :<FcElectricalSensor /> }</button>    
       <button className='absolute right-0 bottom-2 pr-3 text-2xl rounded-md ' onClick={toggle}>{playing ?  <GiSoundWaves /> :<FcElectricalSensor /> }</button>    
       );
 };
@@ -38,44 +43,35 @@ const ColorPara = (props) => {
   return (
     <p>
       {props.children.split(' ').map(text => {
-        return <span className='text-base' 
+        return <span key={Math.random()} className='text-base' 
                   style={{ color: getColor(), display: 'inline', }}
-                  key={Math.random()}>{text}&nbsp;</span>
+                  >{text}&nbsp;</span>
       })
       }
     </p>
   )
 }
 
-const SentencePrev = ({index, nextWordHandler, zh, en, label, words, _id}) => {
+const SentencePrev = ({index, nextWordHandler, zh, en, sound, label, words, _id}) => {
   const [inputs, setInputs] = useState();
 
-  /*
-  const ttsGenerate = async (e, text) => {
-    console.log('ttsGenerate text', removeUnicode(text))
-    const res = await axios.get(`http://127.0.0.1:8000/text2voice/?text=${text}`).then((res) => {
-      console.log('res.data', res.data)
-      return res.data
-    }).catch(function (error) {
-      if (error.response) {
-        // Request made and server responded
-        console.log('error.response.data' ,error.response);
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.log('error.request', error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error', error.message);
-      }
-    });
-    if(res){  return res  }
-  }  */
 
   const submitText = (e) => {
     setInputs(e.target.value)
   }
+  const audio_url = `http://127.0.0.1:8080/api/speech/${sound.split('.mp3')[0]}/audio`
+  const { data, isSuccess, } = useQuery(
+    ["fetch audio.mp3", sound],
+     async () => {
+        return await axios.get(audio_url)
+    },
+    {
+      enabled: Boolean(sound)
+    } // Boolean("") is false
+  );
 
-
+  console.log('words', words)
+  
   return (
     <>
       <div className='mb-2 italic text-2xl border-b border-b-[#62b6cb] text-[#5fa0b4] rounded-xl'>{index+1}</div>
@@ -90,7 +86,7 @@ const SentencePrev = ({index, nextWordHandler, zh, en, label, words, _id}) => {
       <div className='relative w-full py-2 font-semibold justify-between items-end'>
         {/* onClick={(e) => ttsGenerate(e, en)}>  */}
         <span className='inline'>{en} </span>
-        <Player url={'http://localhost:8080/api/speech/62dda166046bc1cdbccff17019769b75/audio'} />
+        {data?.data && <Player url={audio_url} />}
       </div>
       
 
@@ -106,11 +102,6 @@ const SentencePrev = ({index, nextWordHandler, zh, en, label, words, _id}) => {
             </div>
             <li className='text-base pl-2 italic text-slate-500'>{word.rootOrAffix}</li>
             <li className='text-base pl-2'>{word.definition}</li>
-            
-            <li className='text-base pl-2 pt-2'>{word.ex1.zh} </li>
-            <li className='text-base pl-2'>{word.ex1.en} </li>
-
-            
           </ul>
           )
         })

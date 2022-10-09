@@ -41,7 +41,7 @@ const WordSchema: Schema = new Schema (
     soundmarkCognition: {  type: Number, default: 0 },  // soundmark 认知度
     definition: { type: String },
     definitionCognition: {  type: Number, default: 0 },
-    examples:   [{type: Schema.Types.ObjectId, ref: Sentence }],
+    examples:   [{type: Schema.Types.ObjectId, ref: 'Sentence' }],
 
     derivation: [{ type: Schema.Types.ObjectId, ref: "Word" } ],
     synonym:    [{ type: Schema.Types.ObjectId, ref: "Word" } ],

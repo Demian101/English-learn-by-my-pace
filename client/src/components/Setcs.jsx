@@ -22,7 +22,7 @@ const Setcs = () => {
   const { data, isLoading, isError, isSuccess, } = useQuery ('get topN Sentences', fetchTopN, {
     // keepPreviousData: true,
     // refetchOnWindowFocus: true,  // Window 聚焦时将再次 Refetch
-    enabled: true  // RQ 查询默认自动运行， 禁止自动查询。  
+    // enabled: true  // RQ 查询默认自动运行， 禁止自动查询。  
   })
 
   const handlerNextWord = () => {
@@ -46,7 +46,7 @@ const Setcs = () => {
     }
   }, [data, index]);
 
-  console.log('data',data)
+  // console.log('data',data)
   return(
     
     <div className='flex flex-col justify-center items-center'>

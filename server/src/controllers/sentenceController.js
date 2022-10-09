@@ -219,7 +219,7 @@ var getCognitionTopN = function (req, res, next) { return __awaiter(void 0, void
             case 1:
                 _a.trys.push([1, 3, , 4]);
                 SentFields = 'idc.cognition en zh label sound words';
-                WordFields = 'word rootOrAffix label soundmark definition ex1 ex2 ex3';
+                WordFields = 'word rootOrAffix label phrase soundmark definition examples';
                 return [4 /*yield*/, Sentence_1.default.find() // {isInRankList: true}
                         .sort({ 'idc.cognition': 1 })
                         .select(SentFields)
@@ -238,6 +238,9 @@ var getCognitionTopN = function (req, res, next) { return __awaiter(void 0, void
                 if (wordsList) {
                     console.log('wordsList', wordsList);
                     res.json(wordsList);
+                }
+                else {
+                    res.status(500).json({ message: "Something went wrong" });
                 }
                 return [3 /*break*/, 4];
             case 3:
@@ -434,7 +437,7 @@ var soundStream = function (req, res, next) { return __awaiter(void 0, void 0, v
         try {
             sentId = req.params.id;
             console.log("Current directory:", __dirname);
-            soundPath = '/Users/soda/Repository/Eng/pythonTTS/voices/' + sentId + '.mp3';
+            soundPath = '/Users/soda/Repository/English-learn-by-my-pace/pythonTTS/voices/' + sentId + '.mp3';
             stat = fs.statSync(soundPath);
             console.log('req.headers.range', req.headers.range);
             range = req.headers.range;
