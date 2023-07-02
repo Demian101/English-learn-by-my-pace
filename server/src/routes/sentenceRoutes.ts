@@ -6,6 +6,7 @@ import {
   getOneSent,
   editSentence,
   similarityCalculate,
+  concatAudios,
 } from "../controllers/sentenceController";
 
 // api/sentence/...
@@ -31,6 +32,9 @@ router.route("/:id/edit").put(editSentence);
 
 // compare
 router.route("/:id/compare").post(similarityCalculate);
+
+// concat audio
+router.route("/concat").get(concatAudios);
 
 // router.route("/sig").get(getOneWordId);
 // /* router.route("/refresh").post(refreshAuth); */

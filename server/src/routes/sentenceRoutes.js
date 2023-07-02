@@ -20,6 +20,8 @@ router.route("/data/:id")
 router.route("/:id/edit").put(sentenceController_1.editSentence);
 // compare
 router.route("/:id/compare").post(sentenceController_1.similarityCalculate);
+// concat audio
+router.route("/concat").get(sentenceController_1.concatAudios);
 // router.route("/sig").get(getOneWordId);
 // /* router.route("/refresh").post(refreshAuth); */
 // router.route("/:id").get(getUserById);

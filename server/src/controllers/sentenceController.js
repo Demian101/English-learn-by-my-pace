@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.soundStream = exports.similarityCalculate = exports.getOneSent = exports.getAllSents = exports.getCognitionTopN = exports.editSentence = exports.addSentence = void 0;
+exports.concatAudios = exports.soundStream = exports.similarityCalculate = exports.getOneSent = exports.getAllSents = exports.getCognitionTopN = exports.editSentence = exports.addSentence = void 0;
 // import { List } from "reselect/es/types";
 var Sentence_1 = __importDefault(require("../models/Sentence"));
 var ttsGenerate_1 = require("../utils/ttsGenerate");
@@ -47,6 +47,10 @@ var removeUnicode_1 = require("../utils/removeUnicode");
 var Word_1 = __importDefault(require("../models/Word"));
 var stringSimilarity = require("string-similarity");
 var fs = require('fs');
+var audioconcat = require('audioconcat');
+var ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+var ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 // 1. Append Sentence
 // 2. modify Sentence
 // 3. Query Sentence By Cognition and his main Words
@@ -54,6 +58,7 @@ var fs = require('fs');
 // 5. Get 10 lowest sentences.
 // 6. return sound file
 // 7. query a sentence.
+// 8. concat multiple audio files using ffmpeg
 /* const post: IPost = new Post({
   user: req.user._id,
   username: req.user.username,
@@ -437,7 +442,7 @@ var soundStream = function (req, res, next) { return __awaiter(void 0, void 0, v
         try {
             sentId = req.params.id;
             console.log("Current directory:", __dirname);
-            soundPath = '/Users/soda/Repository/English-learn-by-my-pace/pythonTTS/voices/' + sentId + '.mp3';
+            soundPath = '../pythonTTS/voices/' + sentId + '.mp3';
             stat = fs.statSync(soundPath);
             console.log('req.headers.range', req.headers.range);
             range = req.headers.range;
@@ -472,3 +477,54 @@ var soundStream = function (req, res, next) { return __awaiter(void 0, void 0, v
     });
 }); };
 exports.soundStream = soundStream;
+var concatAudios = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var SentFields, WordFields, senList, sound_list_1, today, err_7;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                console.log('concat Audios Controller.... ');
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                SentFields = 'idc.cognition en zh label sound words';
+                WordFields = 'word rootOrAffix label phrase soundmark definition examples';
+                return [4 /*yield*/, Sentence_1.default.find() // {isInRankList: true}
+                        .sort({ 'idc.cognition': 1 })
+                        .select('sound')
+                        .limit(10)];
+            case 2:
+                senList = _a.sent();
+                sound_list_1 = [];
+                if (senList) {
+                    senList.map(function (obj) {
+                        sound_list_1.push('../pythonTTS/voices/' + (obj === null || obj === void 0 ? void 0 : obj.sound));
+                        sound_list_1.push('../pythonTTS/concat/blank.mp3'); // 加一段空白过渡，要求：「和 Sentence 一致：单声道 mono，24K 采样频率，否则 concat 不成功」
+                    });
+                }
+                if (sound_list_1) {
+                    console.log('sound_list', sound_list_1);
+                }
+                today = new Date();
+                audioconcat(sound_list_1)
+                    .concat("../pythonTTS/concat/".concat(today.toISOString().split('T')[0], ".mp3")) // -> '2022-10-31'
+                    .on('start', function (command) {
+                    console.log('ffmpeg process started:', command);
+                })
+                    .on('error', function (err, stdout, stderr) {
+                    console.error('Error:', err);
+                    console.error('ffmpeg stderr:', stderr);
+                })
+                    .on('end', function (output) {
+                    console.error('Audio created in:', output);
+                    res.json({ status: 'OK' });
+                });
+                return [3 /*break*/, 4];
+            case 3:
+                err_7 = _a.sent();
+                console.log(err_7);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); };
+exports.concatAudios = concatAudios;

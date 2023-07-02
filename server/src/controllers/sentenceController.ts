@@ -6,6 +6,10 @@ import { removeUnicode } from "../utils/removeUnicode";
 import Word from "../models/Word";
 const stringSimilarity = require("string-similarity");
 const fs = require('fs');
+const audioconcat = require('audioconcat')
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 // 1. Append Sentence
 // 2. modify Sentence
@@ -14,6 +18,7 @@ const fs = require('fs');
 // 5. Get 10 lowest sentences.
 // 6. return sound file
 // 7. query a sentence.
+// 8. concat multiple audio files using ffmpeg
 
 
 /* const post: IPost = new Post({
@@ -354,9 +359,9 @@ const soundStream = async ( req: Request, res: Response, next: NextFunction) => 
   try{
     const sentId = req.params.id;
     console.log("Current directory:", __dirname);
-    // const soundPath = '../../../pythonTTS/voices/' + sentId + '.mp3';
-    // const soundPath = './' + sentId + '.mp3';
-    const soundPath = '/Users/soda/Repository/English-learn-by-my-pace/pythonTTS/voices/' + sentId + '.mp3';
+
+    // const soundPath = '/Users/soda/Repository/English-learn-by-my-pace/pythonTTS/voices/' + sentId + '.mp3';
+    const soundPath = '../pythonTTS/voices/' + sentId + '.mp3';
     // console.log(fs.statSync(__dirname)) ;
     var stat = fs.statSync(soundPath);
     console.log('req.headers.range', req.headers.range)
@@ -395,7 +400,54 @@ const soundStream = async ( req: Request, res: Response, next: NextFunction) => 
   }
 }
 
+const concatAudios =  async ( req: Request, res: Response, next: NextFunction) => {
+  console.log('concat Audios Controller.... ')
+  try{
 
+    const SentFields = 'idc.cognition en zh label sound words'
+    const WordFields = 'word rootOrAffix label phrase soundmark definition examples'
+
+    const senList: any = await Sentence.find()  // {isInRankList: true}
+      .sort({'idc.cognition': 1})
+      .select('sound')
+      .limit(10);
+    let sound_list: Array<string> = [];
+    if(senList){
+      senList.map((obj: any)=>{
+        sound_list.push( '../pythonTTS/voices/' + obj?.sound)
+        sound_list.push('../pythonTTS/concat/blank.mp3')     // 加一段空白过渡，要求：「和 Sentence 一致：单声道 mono，24K 采样频率，否则 concat 不成功」
+      })
+    }
+    if(sound_list){
+      console.log('sound_list', sound_list)
+    }
+
+
+    // var songs = [
+    //   '../pythonTTS/voices/3f88b4be506efa993cea3bab91259e19.mp3',
+    //   '../pythonTTS/voices/17acbd9865f874d42dc172d47c181df4.mp3',
+    //   '../pythonTTS/voices/67c5d8482ac6f981442274572335a6ec.mp3',
+    // ]
+
+    let today = new Date()
+    audioconcat(sound_list)
+      .concat(`../pythonTTS/concat/${today.toISOString().split('T')[0]}.mp3`)  // -> '2022-10-31'
+      .on('start', function (command: any) {
+        console.log('ffmpeg process started:', command)
+      })
+      .on('error', function (err: any, stdout: any, stderr: any) {
+        console.error('Error:', err)
+        console.error('ffmpeg stderr:', stderr)
+      })
+      .on('end', function (output: any) {
+        console.error('Audio created in:', output)
+        res.json({status: 'OK'})
+      })
+    
+  }catch(err){
+    console.log(err)
+  }
+};
 
 export {
   addSentence,
@@ -404,5 +456,6 @@ export {
   getAllSents,
   getOneSent,
   similarityCalculate,
-  soundStream
+  soundStream,
+  concatAudios,
 };

@@ -1,5 +1,7 @@
 # 前端 Frontend
 
+
+
 ## Layout
 
 
@@ -20,7 +22,7 @@ Api-key： a663c170-e72f-4e54-a218-84de6ee8bd8e
 
 ### python3 gTTS
 
-```
+```bash
 https://www.geeksforgeeks.org/convert-text-speech-python/
 
 可以用文本的 md5 编码做为文件名，实现不同的文本对应不同的文件，如果已经生成了对应的文件，无需重复生成，直接返回即可
@@ -28,15 +30,30 @@ https://www.geeksforgeeks.org/convert-text-speech-python/
 
 
 
-fastapi	
+fastapi 起一个 Python 后端来存储生成 tts 文件（ JS 实在没找到可以用的 library ）
 
-```
+```bash
 pip3 install fastapi
 pip3 install pyttsx3
 pip3 install "uvicorn[standard]"
 
 
 python3 -m uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+```
+
+
+
+
+
+### Audio Concat - ffmpeg
+
+```react
+npm i @ffmpeg-installer/ffmpeg
+
+//sentenceController.ts
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 ```
 
 
@@ -53,10 +70,6 @@ python3 -m uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 Setcs   ( query topN)
   sentPreview  ( show single info, feedback)
 ```
-
-
-
-
 
 
 
@@ -173,13 +186,14 @@ db.words.find({word: 'fund'});
 db.words.remove({word: 'fund'});
 
 db.forms.find({_id: ObjectId("633590fe8579c76ec77dd769")})
+db.forms.find({_id: ObjectId("6346b544cbdf7e1eb52b95d7")})
 db.forms.remove({_id: ObjectId("633590fe8579c76ec77dd769")})
 
 db.words.findOneAndUpdate({word: 'fund'}, {
   $set: { 
     derivation: []
   }
-}, {new: true});
+}, {new: true});	
 
 
 
@@ -193,6 +207,18 @@ db.sentences.find({_id: '6337020c6e918227b328c005'});
 db.sentences.find({_id: ObjectId("63370fa36c1468ae35d3b5df")});
 
 db.sentences.find({_id: ObjectId("63379089badc2aba0892540f")});
+
+db.countDocuments({ participation: '线下' })
+
+
+image 修改：
+db.forms.find({_id: ObjectId("6346b544cbdf7e1eb52b95d7")})
+db.forms.findOneAndUpdate({_id: ObjectId("6346b544cbdf7e1eb52b95d7")}, {
+  $set: { 
+    image: 'some string,....哈哈'
+  }
+}, {new: true});	
+
 
 
 ```
@@ -455,6 +481,16 @@ stringSimilarity.compareTwoStrings(
 
 
 
+#### concat audio 拼接音频
+
+```bash
+api: /api/sen/concat
+method: GET
+url: http://localhost:8080/api/sen/concat
+```
+
+
+
 
 
 ### api/speech
@@ -519,8 +555,6 @@ div 父元素遵循文档流 ,在上一个 div 的下面自然出现 ;
 上下分别是 无 `justify-items-center`  和 有 `justify-items-center`  的区别 : 
 
 ![](http://imagesoda.oss-cn-beijing.aliyuncs.com/Sodaoo/2022-06-29-020406.png)
-
-
 
 
 
@@ -800,136 +834,4 @@ previous  /'priːviəs/  adj. 先前的，早先的；上一次的
 
 ## 备忘录文件（已整理）- Web3：
 
-
-
-
-
-
-
-# React-Query
-
-## 单击按钮时如何使用 RQ ?
-
-According to the [API Reference](https://react-query.tanstack.com/reference/useQuery), you need to change the `enabled` option to **false** to disable a query from automatically running. Then you refetch manually.
-
-根据 API Reference，您需要将 enabled 选项更改为 false 以禁用查询自动运行。然后你手动重新获取。
-
-```react
-// emulates a fetch (useQuery expects a Promise)
-const emulateFetch = _ => {
-  return new Promise(resolve => {
-    resolve([{ data: "ok" }]);
-  });
-};
-
-const handleClick = () => {
-  // manually refetch
-  refetch();
-};
-
-const { data, refetch } = useQuery("my_key", emulateFetch, {
-  refetchOnWindowFocus: false,
-  enabled: false // disable this query from automatically running
-});
-
-return (
-  <div>
-    <button onClick={handleClick}>Click me</button>
-    {JSON.stringify(data)}
-  </div>
-);
-```
-
-
-
-另一个答案：
-
->  You have to pass the `manual: true` parameter option so the query doesn't fetch on mount.以便查询不会在挂载时自动获取
->
->  Also, you should pass `fetchData` without the parentheses（括号）, so you pass the function reference and not the value. To call the query you use refetch().
-
-```js
-const {status, data, error, refetch} = useQuery(myKey, fetchData, {
-      manual: true,
-    });
-
-const onClick = () => { refetch() }
-```
-
-
-
-## 手动 fetch 而不是自动执行查询
-
-```react
-
-  // 这就是 React-Query 处理禁止自动查询（改为手动触发如 Button 触发的方式）：
-  // ① 先设refetch ② 将 enabled 设为 false 
-  const { isLoading: isLoadingSentenceInfo, refetch: checkWordsExistence } = useQuery(
-    "check-Words-Existence",
-    async () => {
-      console.log('check-Words-Existence')
-      return await httpClient.get(`/word/data/${wordExt}`)
-    }, 
-    {
-      onSuccess: (res) => { setPostResult({status: 'success',res: res}) },
-      onError: (err) => { setPostResult({status: 'error', res: err.response?.data || err});},
-      refetchOnWindowFocus: false,
-      enabled: false  // 禁用查询自动运行
-    } 
-  );
-```
-
-
-
-## pass params to React-query
-
-传递给 react-query 的查询函数会注入一个 queryContext，它是一个由 queryKey 组成的对象（如果您使用的是无限查询，还有更多信息）。所以是的，访问依赖项的一种正确方法是通过 `queryKey`：
-
-```react
-export const getProduct = async ({ queryKey }) => {
-    const [_, prodId] = queryKey
-    const { data } = await axios.get(`/api/v1/products/${prodId}`)
-    return data
-}
-const { data } = useQuery(['product', prodId], getProduct)
-```
-
-
-
-Another way is to use inline anonymous functions(内联匿名函数), which is well documented in the docs in: [If your query function depends on a variable, include it in your query key](https://react-query.tanstack.com/guides/query-keys#if-your-query-function-depends-on-a-variable-include-it-in-your-query-key)
-
-```react
-export const getProduct = async (prodId) => {
-    const { data } = await axios.get(`/api/v1/products/${prodId}`)
-    return data
-}
-const { data } = useQuery(['product', prodId], () => getProduct(prodId))
-```
-
-
-
-## 条件查询、依赖查询
-
-The key was to use [Dependent Queries](https://react-query.tanstack.com/guides/dependent-queries)
-
-So, in my main component, I create a boolean and pass that to the `enabled` option of the `useQuery` hook:
-
-如下例， 只有当输入字符长度 > 3 时， 查询才会触发：
-
-1. `['search', searchString] `  --- 要点 1 
-2. ` {enabled: isLongEnough}`   --- 要点 2 
-
-```js
-const isLongEnough = searchString.length > 3;
-const {data, isLoading} = useQuery(['search', searchString], getSearchResults, {enabled: isLongEnough});
-```
-
-and the API calling method is simply the API call - not any conditional:
-
-```js
-const getSearchResults = async (_, searchString) => {
-    const {data} = await axios.get(`/search?q=${searchString}`);
-    return data;
-}
-```
 
